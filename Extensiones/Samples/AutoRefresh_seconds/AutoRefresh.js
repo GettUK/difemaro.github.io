@@ -21,13 +21,15 @@
 	let activeDatasourceIdList = [];
 	let isPageInFocus = true;
 
-	document.addEventListener("visibilitychange", function () {
-		console.warn('state: ', document.visibilityState);
-
-		isPageInFocus = document.visibilityState === 'visible';
-	})
-
 	$(document).ready(function () {
+		window.onfocus = function () {
+			isPageInFocus = true;
+			console.warn('focus')
+		};
+		window.onblur = function () {
+			isPageInFocus = false;
+			console.warn('blur')
+		};
 		// When initializing an extension, an optional object is passed that maps a special ID (which
 		// must be 'configure') to a function.  This, in conjuction with adding the correct context menu
 		// item to the manifest, will add a new "Configure..." context menu item to the zone of extension
@@ -40,10 +42,6 @@
 			getSettings();
 
 			tableau.extensions.settings.addEventListener(tableau.TableauEventType.SettingsChanged, (settingsEvent) => {
-				updateExtensionBasedOnSettings(settingsEvent.newSettings)
-			});
-
-			tableau.extensions.dashboardContent.dashboard.addEventListener(tableau.TableauEventType.DashboardLayoutChanged, (settingsEvent) => {
 				updateExtensionBasedOnSettings(settingsEvent.newSettings)
 			});
 		});
@@ -70,7 +68,7 @@
 		// This uses the window.location.origin property to retrieve the scheme, hostname, and
 		// port where the parent extension is currently running, so this string doesn't have
 		// to be updated if the extension is deployed to a new location.
-		const popupUrl = `${window.location.origin}/Extensiones/Samples/AutoRefresh_seconds/AutoRefreshDialog.html`;
+		const popupUrl = `${window.location.origin}/difemaro.github.io/Extensiones/Samples/AutoRefresh_seconds/AutoRefreshDialog.html`;
 
 		/**
 		 * This is the API call that actually displays the popup extension to the user.  The
@@ -115,6 +113,7 @@
 	function setupRefreshInterval(interval) {
 		refreshInterval = setInterval(function () {
 			if (isPageInFocus) {
+				console.warn('call');
 				let dashboard = tableau.extensions.dashboardContent.dashboard;
 				dashboard.worksheets.forEach(function (worksheet) {
 					worksheet.getDataSourcesAsync().then(function (datasources) {
@@ -125,6 +124,8 @@
 						});
 					});
 				});
+			} else {
+				console.warn('skip');
 			}
 		}, interval * 1000);
 	}
